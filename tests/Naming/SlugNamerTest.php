@@ -4,6 +4,7 @@ namespace Vich\UploaderBundle\Tests\Naming;
 
 use Doctrine\ORM\EntityRepository;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\MockObject\MockBuilder;
 use Vich\UploaderBundle\Naming\SlugNamer;
 use Vich\UploaderBundle\Tests\TestCase;
 
@@ -44,11 +45,16 @@ final class SlugNamerTest extends TestCase
             ->willReturn($file)
         ;
 
-        $repo = $this->getMockBuilder(EntityRepository::class)
-            ->disableOriginalConstructor()
-            ->addMethods(['findOneBySlug'])
-            ->getMock()
-        ;
+        // @phpstan-ignore-next-line function.impossibleType
+        if (\method_exists(MockBuilder::class, 'addMethods')) {
+            // @phpstan-ignore-next-line method.notFound
+            $repo = $this->getMockBuilder(EntityRepository::class)
+                ->disableOriginalConstructor()
+                ->addMethods(['findOneBySlug'])
+                ->getMock();
+        } else {
+            $repo = $this->createMock(EntityRepository::class);
+        }
         $repo
             ->method('findOneBySlug')
             ->willReturnMap([['lala.jpeg', null], ['lala.mp3', new \stdClass()]])
